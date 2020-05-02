@@ -1,0 +1,203 @@
+#include <iostream>
+#include <graphics.h>
+#include <conio.h>//getch()
+#include <time.h>
+using namespace std;
+
+enum Position { up, down, left, right };
+
+struct Point
+{
+	int x, y;
+
+};//单位的属性
+
+struct Snake
+{
+	Point xy[100];
+	int num;//节数
+	Position pos;//方向
+};
+Snake snake;
+struct Food
+{
+	int x, y;
+	int grade;
+	int flag = 1;//食物在不在的标记
+};
+Food food;
+
+
+void initsnake()
+{
+	snake.xy[2].x = 0;
+	snake.xy[2].y = 0;
+
+	snake.xy[1].x = 10;
+	snake.xy[1].y = 0;
+
+	snake.xy[0].x = 20;
+	snake.xy[0].y = 0;
+
+	snake.num = 3;
+	snake.pos = Position::right;
+}
+
+void drawsnake()
+{
+	for (int i = 0; i < snake.num; i++)
+	{
+		setlinecolor(BLACK);
+		setfillcolor(BLUE);
+		fillrectangle(snake.xy[i].x,snake.xy[i].y, snake.xy[i].x+10, snake.xy[i].y+10);
+	}
+}
+void move()
+{
+	for (int i = snake.num - 1; i > 0; i--)
+	{
+		snake.xy[i].x = snake.xy[i - 1].x;
+		snake.xy[i].y = snake.xy[i - 1].y;
+	}
+
+	switch (snake.pos)
+	{
+	case Position::up:
+		snake.xy[0].y -= 10;
+		break;
+	case Position::down:
+		snake.xy[0].y += 10;
+		break;
+	case Position::left:
+		snake.xy[0].x -= 10;
+		break;
+	case Position::right:
+		snake.xy[0].x += 10;
+		break;
+	}
+}
+
+
+void keydown()
+{
+	char key = _getch();
+	switch (key)
+	{
+	case 'w':
+		if (snake.pos != down)
+			snake.pos = up;
+		break;
+	case 's':
+		if (snake.pos != up)
+			snake.pos = down;
+		break;
+	case 'a':
+		if (snake.pos != Position::right)
+			snake.pos = Position::left;
+		break;
+	case 'd':
+		if (snake.pos != Position::left)
+			snake.pos = Position::right;
+		break;
+	}
+}
+
+
+void initfood()
+{
+	food.x = rand() % 80 * 10;
+	food.y = rand() % 60 * 10;
+	for (int i = 0; i < snake.num; i++)
+	{
+		if (food.x == snake.xy[i].x&&food.y == snake.xy[i].y)
+		{
+			food.x = rand() % 80 * 10;
+			food.y = rand() % 60 * 10;
+		}
+	}
+	food.flag = 1;
+}
+
+void drawfood()
+{
+	setlinecolor(BLACK);
+	setfillcolor(GREEN);
+	fillrectangle(food.x, food.y, food.x + 10, food.y + 10);
+}
+
+void eatfood()
+{
+	if (snake.xy[0].x == food.x&&snake.xy[0].y == food.y)
+	{
+		food.flag = 0;;
+		snake.num++;
+		food.grade += 10;
+	}
+}
+
+int gameover()
+{
+	if (snake.xy[0].x <0 || snake.xy[0].x >800 || snake.xy[0].y <0 || snake.xy[0].y >600)
+	{
+		return 1;
+	}
+	for (int i = 1; i < snake.num; i++)
+	{
+		if (snake.xy[i].x == snake.xy[0].x&&snake.xy[i].y == snake.xy[0].y)
+			return 1;
+	}
+
+	return 0;
+}
+int main()
+{
+	
+	srand((unsigned int)time(NULL));
+	initgraph(800, 600);
+	setbkcolor(RGB(228,175,198));//画图里设置
+	cleardevice();
+
+	initsnake();
+	initfood();
+	while (1)
+	{
+		cleardevice();
+		drawsnake();
+
+		
+		drawfood();
+		eatfood();
+		
+		move();
+		if (gameover())
+		{
+			break;
+		}
+		if (_kbhit())
+		{
+			keydown();
+		
+		}
+
+		if (food.flag == 0)
+		{
+			initfood();
+		}
+		Sleep(200);
+		
+		
+	}
+
+	RECT r = { 0, 0, 800, 600 };
+	drawtext(_T("卢本伟牛逼！"), &r, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+	
+	system("pause ");
+	closegraph();
+	
+	return 0;
+}
+
+
+
+
